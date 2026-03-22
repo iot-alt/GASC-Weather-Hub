@@ -4,141 +4,159 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="300">
-<title>GASC Weather Station</title>
+<title>GASC Weather Station — Dual</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
-  --bg:#080e14;
-  --panel:#0d1821;
-  --border:#1a2e44;
-  --accent:#00c8ff;
-  --accent2:#00ffa3;
-  --accent3:#ff6b35;
-  --text:#c8dde8;
-  --muted:#4a6a7a;
-  --glow:0 0 20px rgba(0,200,255,0.15);
+  --bg:#080e14;--panel:#0d1821;--border:#1a2e44;
+  --s1:#00c8ff;--s2:#c084fc;--accent2:#00ffa3;
+  --text:#c8dde8;--muted:#4a6a7a;--glow:0 0 20px rgba(0,200,255,0.15);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,200,255,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(0,255,163,0.03) 0%,transparent 60%);pointer-events:none;z-index:0}
-
-/* HEADER */
-header{position:relative;z-index:1;padding:20px 30px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:linear-gradient(180deg,rgba(0,200,255,0.05) 0%,transparent 100%)}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(0,200,255,0.04) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 80%,rgba(192,132,252,0.03) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+header{position:relative;z-index:1;padding:20px 30px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  background:linear-gradient(180deg,rgba(0,200,255,0.05) 0%,transparent 100%)}
 .logo{display:flex;align-items:center;gap:14px}
-.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#00c8ff22,#00ffa322);border:1px solid var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#00c8ff22,#c084fc22);
+  border:1px solid var(--s1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
 .logo-text h1{font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase}
 .logo-text p{font-size:0.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
 .header-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.live-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(0,255,163,0.08);border:1px solid rgba(0,255,163,0.3);border-radius:20px;font-size:0.72rem;letter-spacing:1px;color:var(--accent2)}
+.live-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(0,255,163,0.08);
+  border:1px solid rgba(0,255,163,0.3);border-radius:20px;font-size:0.72rem;letter-spacing:1px;color:var(--accent2)}
 .live-dot{width:7px;height:7px;background:var(--accent2);border-radius:50%;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
 .timestamp{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--muted)}
 
+/* TABS */
+.station-nav{position:relative;z-index:1;display:flex;align-items:center;border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,0.2);padding:0 24px;overflow-x:auto}
+.stn-tab{padding:12px 20px;font-size:0.8rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:all 0.2s;white-space:nowrap;user-select:none}
+.stn-tab:hover{color:var(--text)}
+.stn-tab.act-s1{color:var(--s1);border-bottom-color:var(--s1)}
+.stn-tab.act-s2{color:var(--s2);border-bottom-color:var(--s2)}
+.stn-tab.act-both{color:var(--accent2);border-bottom-color:var(--accent2)}
+.stn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
 /* META BAR */
-.metabar{position:relative;z-index:1;display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto}
-.meta-item{padding:10px 20px;font-size:0.75rem;color:var(--muted);border-right:1px solid var(--border);white-space:nowrap;letter-spacing:0.5px}
-.meta-item span{color:var(--accent);font-family:'Share Tech Mono',monospace}
+.metabar{position:relative;z-index:1;display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.meta-item{padding:9px 18px;font-size:0.75rem;color:var(--muted);border-right:1px solid var(--border);white-space:nowrap}
+.meta-item span{font-family:'Share Tech Mono',monospace}
+.meta-item.s1 span{color:var(--s1)}
+.meta-item.s2 span{color:var(--s2)}
 .meta-item.bat span{color:#f44336}
+.meta-sep{padding:9px 14px;font-size:0.65rem;color:var(--border);border-right:1px solid var(--border);
+  display:flex;align-items:center;letter-spacing:2px;text-transform:uppercase}
+
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
 
 /* MAIN GRID */
-.main{position:relative;z-index:1;padding:20px 24px;display:grid;grid-template-columns:1fr 1fr 1fr 320px;grid-template-rows:auto auto auto;gap:16px}
-
-/* CARDS */
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;transition:border-color 0.3s,box-shadow 0.3s;position:relative;overflow:hidden}
-.card:hover{border-color:rgba(0,200,255,0.4);box-shadow:var(--glow)}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity 0.3s}
+.main{position:relative;z-index:1;padding:20px 24px;display:grid;
+  grid-template-columns:1fr 1fr 1fr 320px;grid-template-rows:auto auto auto;gap:16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;
+  transition:border-color 0.3s,box-shadow 0.3s;position:relative;overflow:hidden}
+.card:hover{box-shadow:var(--glow)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.3s;
+  background:linear-gradient(90deg,transparent,var(--accent-cur,var(--s1)),transparent)}
 .card:hover::before{opacity:1}
-.card-label{font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.card-label::before{content:'';width:16px;height:1px;background:var(--accent);opacity:0.5}
+.card-label{font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card-label::before{content:'';width:16px;height:1px;background:var(--accent-cur,var(--s1));opacity:0.5}
 .card-value{font-size:2.6rem;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px}
 .card-value.big{font-size:3rem}
 .card-unit{font-size:0.85rem;color:var(--muted);margin-left:4px;font-weight:400}
 .card-sub{font-size:0.75rem;color:var(--muted);margin-top:8px;font-family:'Share Tech Mono',monospace}
-
-/* TEMPERATURE CARD */
 .card-temp{grid-column:1;grid-row:1;background:linear-gradient(135deg,var(--panel),rgba(255,107,53,0.08));border-color:rgba(255,107,53,0.3)}
 .card-temp .card-value{color:#ff9a6c}
-.card-temp::before{background:linear-gradient(90deg,transparent,#ff6b35,transparent)}
-
-/* HUMIDITY */
 .card-hum{grid-column:2;grid-row:1;background:linear-gradient(135deg,var(--panel),rgba(0,200,255,0.06))}
-
-/* PRESSURE */
 .card-pres{grid-column:3;grid-row:1;background:linear-gradient(135deg,var(--panel),rgba(0,255,163,0.06));border-color:rgba(0,255,163,0.2)}
 .card-pres .card-value{color:#7fffcf}
-.card-pres::before{background:linear-gradient(90deg,transparent,#00ffa3,transparent)}
-
-/* WIND COMPASS */
-.card-wind{grid-column:4;grid-row:1/4;background:linear-gradient(135deg,var(--panel),rgba(0,200,255,0.05))}
+.card-wind{grid-column:4;grid-row:1/4;background:linear-gradient(135deg,var(--panel),rgba(0,200,255,0.04))}
 .compass-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:8px}
 .compass{position:relative;width:180px;height:180px}
-.compass-ring{width:180px;height:180px;border-radius:50%;border:2px solid var(--border);position:relative;background:radial-gradient(circle,rgba(0,200,255,0.03),transparent)}
+.compass-ring{width:180px;height:180px;border-radius:50%;border:2px solid var(--border);position:relative}
 .compass-ring::before{content:'';position:absolute;inset:8px;border-radius:50%;border:1px dashed rgba(0,200,255,0.15)}
 .compass-labels{position:absolute;inset:0;pointer-events:none}
-.compass-labels span{position:absolute;font-size:0.7rem;font-weight:700;letter-spacing:1px;color:var(--muted)}
-.compass-labels .N{top:4px;left:50%;transform:translateX(-50%);color:var(--accent)}
+.compass-labels span{position:absolute;font-size:0.7rem;font-weight:700;color:var(--muted)}
+.compass-labels .N{top:4px;left:50%;transform:translateX(-50%);color:var(--accent-cur,var(--s1))}
 .compass-labels .S{bottom:4px;left:50%;transform:translateX(-50%)}
 .compass-labels .E{right:6px;top:50%;transform:translateY(-50%)}
 .compass-labels .W{left:6px;top:50%;transform:translateY(-50%)}
-.compass-arrow{position:absolute;top:50%;left:50%;width:4px;height:70px;margin-left:-2px;margin-top:-60px;transform-origin:bottom center;transform:rotate(10.2deg);transition:transform 1s cubic-bezier(0.34,1.56,0.64,1)}
-.arrow-head{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:16px solid var(--accent);margin:0 auto;filter:drop-shadow(0 0 6px var(--accent))}
-.arrow-tail{width:2px;height:54px;background:linear-gradient(var(--accent),rgba(0,200,255,0.2));margin:0 auto}
-.compass-center{position:absolute;top:50%;left:50%;width:10px;height:10px;background:var(--accent);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px var(--accent)}
+.compass-arrow{position:absolute;top:50%;left:50%;width:4px;height:70px;margin-left:-2px;margin-top:-60px;
+  transform-origin:bottom center;transition:transform 1s cubic-bezier(0.34,1.56,0.64,1)}
+.arrow-head{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;
+  border-bottom:16px solid var(--accent-cur,var(--s1));margin:0 auto}
+.arrow-tail{width:2px;height:54px;background:linear-gradient(var(--accent-cur,var(--s1)),rgba(0,200,255,0.2));margin:0 auto}
+.compass-center{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;
+  background:var(--accent-cur,var(--s1));transform:translate(-50%,-50%)}
 .wind-stats{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .wind-stat{background:rgba(0,200,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
 .wind-stat-val{font-size:1.4rem;font-weight:700;color:#fff}
 .wind-stat-lbl{font-size:0.65rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-top:2px}
-
-/* LIGHT + UV */
-.card-light{grid-column:1;grid-row:2}
-.card-uv{grid-column:2;grid-row:2}
-.uv-bar{margin-top:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,#4caf50,#ffeb3b,#ff9800,#f44336,#9c27b0);position:relative}
-.uv-cursor{position:absolute;top:-3px;width:12px;height:12px;background:#fff;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 6px rgba(255,255,255,0.6);transition:left 0.5s}
+.card-light{grid-column:1;grid-row:2}.card-uv{grid-column:2;grid-row:2}.card-rain{grid-column:3;grid-row:2}
+.uv-bar{margin-top:12px;height:6px;border-radius:3px;
+  background:linear-gradient(90deg,#4caf50,#ffeb3b,#ff9800,#f44336,#9c27b0);position:relative}
+.uv-cursor{position:absolute;top:-3px;width:12px;height:12px;background:#fff;border-radius:50%;
+  transform:translateX(-50%);box-shadow:0 0 6px rgba(255,255,255,0.6)}
 .uv-label-text{margin-top:8px;font-size:0.75rem;font-family:'Share Tech Mono',monospace}
-
-/* RAIN */
-.card-rain{grid-column:3;grid-row:2}
 .rain-drops{display:flex;align-items:flex-end;gap:3px;height:40px;margin-top:8px}
-.rain-drop{width:8px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent),rgba(0,200,255,0.3));animation:raindrop 1.5s infinite}
-.rain-drop:nth-child(1){height:30%;animation-delay:0s}
-.rain-drop:nth-child(2){height:60%;animation-delay:0.2s}
-.rain-drop:nth-child(3){height:45%;animation-delay:0.4s}
-.rain-drop:nth-child(4){height:80%;animation-delay:0.1s}
+.rain-drop{width:8px;border-radius:4px 4px 0 0;
+  background:linear-gradient(180deg,var(--accent-cur,var(--s1)),rgba(0,200,255,0.3));animation:raindrop 1.5s infinite}
+.rain-drop:nth-child(1){height:30%;animation-delay:0s}.rain-drop:nth-child(2){height:60%;animation-delay:0.2s}
+.rain-drop:nth-child(3){height:45%;animation-delay:0.4s}.rain-drop:nth-child(4){height:80%;animation-delay:0.1s}
 .rain-drop:nth-child(5){height:35%;animation-delay:0.3s}
 @keyframes raindrop{0%,100%{opacity:0.4;transform:scaleY(0.8)}50%{opacity:1;transform:scaleY(1)}}
-
-/* CHARTS ROW */
 .chart-row{grid-column:1/4;grid-row:3;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.chart-title{font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.chart-title{font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .chart-title .dot{width:8px;height:8px;border-radius:50%}
-
-/* SIGNAL CARD */
 .card-signal{grid-column:4;grid-row:3;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
 .signal-bars{display:flex;align-items:flex-end;gap:4px;height:40px;margin:12px 0}
 .sig-bar{flex:1;border-radius:2px 2px 0 0;background:var(--border);transition:background 0.3s}
-.sig-bar.active{background:var(--accent2)}
-.signal-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.8rem}
+.sig-bar.on{background:var(--accent2)}
+.signal-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.8rem}
 .signal-row:last-child{border:none}
-.signal-key{color:var(--muted);letter-spacing:0.5px}
-.signal-val{font-family:'Share Tech Mono',monospace;color:var(--accent)}
+.signal-key{color:var(--muted)}
+.signal-val{font-family:'Share Tech Mono',monospace;color:var(--accent-cur,var(--s1))}
 
-/* FOOTER */
-footer{position:relative;z-index:1;text-align:center;padding:14px;font-size:0.7rem;color:var(--muted);border-top:1px solid var(--border);letter-spacing:1px;text-transform:uppercase}
+/* COMPARE PANEL */
+.compare-wrap{position:relative;z-index:1;padding:20px 24px}
+.cmp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.cmp-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.cmp-title{font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.cmp-vals{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.cval{border-radius:8px;padding:10px 12px;border-left:3px solid;background:rgba(255,255,255,0.02)}
+.cval-lbl{font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.cval-num{font-size:1.55rem;font-weight:700;color:#fff}
+.cval-unit{font-size:0.72rem;color:var(--muted);margin-left:2px}
+.cmp-diff{font-size:0.75rem;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.cmp-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cmp-chart-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.legend-bar{display:flex;gap:20px;margin-left:auto}
+.lgd{display:flex;align-items:center;gap:6px;font-size:0.75rem;letter-spacing:1px}
+.lgd-dot{width:10px;height:10px;border-radius:50%}
 
-/* RESPONSIVE */
+footer{position:relative;z-index:1;text-align:center;padding:14px;font-size:0.7rem;
+  color:var(--muted);border-top:1px solid var(--border);letter-spacing:1px;text-transform:uppercase}
 @media(max-width:1100px){
-  .main{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto}
-  .card-wind{grid-column:1/4;grid-row:4}
-  .chart-row{grid-column:1/4;grid-row:5}
-  .card-signal{grid-column:1/4;grid-row:6}
+  .main{grid-template-columns:1fr 1fr 1fr}
+  .card-wind{grid-column:1/4;grid-row:4}.chart-row{grid-column:1/4;grid-row:5}.card-signal{grid-column:1/4;grid-row:6}
+  .cmp-grid,.cmp-charts{grid-template-columns:1fr 1fr}
 }
 @media(max-width:700px){
   .main{grid-template-columns:1fr 1fr;padding:12px}
-  .card-wind{grid-column:1/3}
-  .chart-row{grid-column:1/3;grid-template-columns:1fr}
-  .card-signal{grid-column:1/3}
+  .card-wind{grid-column:1/3}.chart-row{grid-column:1/3;grid-template-columns:1fr}.card-signal{grid-column:1/3}
+  .cmp-grid,.cmp-charts{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -154,204 +172,486 @@ footer{position:relative;z-index:1;text-align:center;padding:14px;font-size:0.7r
   </div>
   <div class="header-right">
     <div class="live-badge"><span class="live-dot"></span>LIVE</div>
-    <div class="timestamp">Updated: 2026-03-16 21:04:41</div>
+    <div class="timestamp">Updated: 2026-03-22 09:26:06</div>
   </div>
 </header>
 
-<div class="metabar">
-  <div class="meta-item">Station <span>73400219</span></div>
-  <div class="meta-item">Gateway <span>RAK7289C</span></div>
-  <div class="meta-item">Network <span>IN865 LoRaWAN</span></div>
-  <div class="meta-item">FCnt <span>8</span></div>
-  <div class="meta-item bat">Battery <span>--%</span></div>
-  <div class="meta-item">Refresh <span>5 min</span></div>
+<div class="station-nav">
+  <div class="stn-tab act-s1" id="tab-s1" onclick="switchTab('s1')">
+    <span class="stn-dot" style="background:var(--s1)"></span>Station 1
+  </div>
+  <div class="stn-tab" id="tab-s2" onclick="switchTab('s2')">
+    <span class="stn-dot" style="background:var(--s2)"></span>Station 2
+  </div>
+  <div class="stn-tab" id="tab-both" onclick="switchTab('both')">
+    <span class="stn-dot" style="background:var(--accent2)"></span>Compare
+  </div>
 </div>
 
-<div class="main">
+<div class="metabar" id="metabar"></div>
 
-  <!-- TEMPERATURE -->
-  <div class="card card-temp">
-    <div class="card-label">Air Temperature</div>
-    <div><span class="card-value big">28.3</span><span class="card-unit">°C</span></div>
-    <div class="card-sub">Feels like 28.3 °C</div>
-  </div>
-
-  <!-- HUMIDITY -->
-  <div class="card card-hum">
-    <div class="card-label">Relative Humidity</div>
-    <div><span class="card-value">54.0</span><span class="card-unit">%</span></div>
-    <div class="card-sub">Dew point — °C</div>
-  </div>
-
-  <!-- PRESSURE -->
-  <div class="card card-pres">
-    <div class="card-label">Barometric Pressure</div>
-    <div><span class="card-value">980.1</span><span class="card-unit">hPa</span></div>
-    <div class="card-sub">Sea level reference</div>
-  </div>
-
-  <!-- WIND COMPASS -->
-  <div class="card card-wind">
-    <div class="card-label">Wind</div>
-    <div class="compass-wrap">
-      <div class="compass">
-        <div class="compass-ring">
-          <div class="compass-labels">
-            <span class="N">N</span>
-            <span class="S">S</span>
-            <span class="E">E</span>
-            <span class="W">W</span>
+<!-- ── STATION 1 ── -->
+<div class="panel active" id="panel-s1">
+  <div class="main" style="--accent-cur:var(--s1)">
+    <div class="card card-temp">
+      <div class="card-label">Air Temperature</div>
+      <div><span class="card-value big" id="s1-temp">--</span><span class="card-unit">°C</span></div>
+      <div class="card-sub" id="s1-feels">--</div>
+    </div>
+    <div class="card card-hum">
+      <div class="card-label">Relative Humidity</div>
+      <div><span class="card-value" id="s1-hum">--</span><span class="card-unit">%</span></div>
+      <div class="card-sub" id="s1-dew">Dew point -- °C</div>
+    </div>
+    <div class="card card-pres">
+      <div class="card-label">Barometric Pressure</div>
+      <div><span class="card-value" id="s1-pres">--</span><span class="card-unit">hPa</span></div>
+      <div class="card-sub">Sea level reference</div>
+    </div>
+    <div class="card card-wind">
+      <div class="card-label">Wind</div>
+      <div class="compass-wrap">
+        <div class="compass">
+          <div class="compass-ring">
+            <div class="compass-labels">
+              <span class="N">N</span><span class="S">S</span>
+              <span class="E">E</span><span class="W">W</span>
+            </div>
+            <div class="compass-arrow" id="s1-arrow">
+              <div class="arrow-head"></div><div class="arrow-tail"></div>
+            </div>
+            <div class="compass-center"></div>
           </div>
-          <div class="compass-arrow">
-            <div class="arrow-head"></div>
-            <div class="arrow-tail"></div>
-          </div>
-          <div class="compass-center"></div>
         </div>
-      </div>
-      <div class="wind-stats">
-        <div class="wind-stat">
-          <div class="wind-stat-val">1.0</div>
-          <div class="wind-stat-lbl">m/s Speed</div>
-        </div>
-        <div class="wind-stat">
-          <div class="wind-stat-val">N</div>
-          <div class="wind-stat-lbl">10.2° Dir</div>
+        <div class="wind-stats">
+          <div class="wind-stat"><div class="wind-stat-val" id="s1-wspeed">--</div><div class="wind-stat-lbl">m/s Speed</div></div>
+          <div class="wind-stat"><div class="wind-stat-val" id="s1-wdir">--</div><div class="wind-stat-lbl" id="s1-wdeg">--° Dir</div></div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- LIGHT -->
-  <div class="card card-light">
-    <div class="card-label">Light Intensity</div>
-    <div><span class="card-value">0.0</span><span class="card-unit">lux</span></div>
-    <div class="card-sub">Solar irradiance</div>
-  </div>
-
-  <!-- UV -->
-  <div class="card card-uv">
-    <div class="card-label">UV Index</div>
-    <div><span class="card-value">0.0</span><span class="card-unit">UV</span></div>
-    <div class="uv-bar">
-      <div class="uv-cursor" id="uvCursor"></div>
+    <div class="card card-light">
+      <div class="card-label">Light Intensity</div>
+      <div><span class="card-value" id="s1-lux">--</span><span class="card-unit">lux</span></div>
+      <div class="card-sub">Solar irradiance</div>
     </div>
-    <div class="uv-label-text">Low</div>
-  </div>
-
-  <!-- RAINFALL -->
-  <div class="card card-rain">
-    <div class="card-label">Rainfall</div>
-    <div><span class="card-value">0.0</span><span class="card-unit">mm</span></div>
-    <div class="rain-drops">
-      <div class="rain-drop"></div><div class="rain-drop"></div>
-      <div class="rain-drop"></div><div class="rain-drop"></div>
-      <div class="rain-drop"></div>
+    <div class="card card-uv">
+      <div class="card-label">UV Index</div>
+      <div><span class="card-value" id="s1-uv">--</span><span class="card-unit">UV</span></div>
+      <div class="uv-bar"><div class="uv-cursor" id="s1-uvC"></div></div>
+      <div class="uv-label-text" id="s1-uvL">--</div>
     </div>
-  </div>
-
-  <!-- CHARTS ROW -->
-  <div class="chart-row">
-    <div class="chart-card">
-      <div class="chart-title"><span class="dot" style="background:#ff9a6c"></span>Temperature &amp; Humidity</div>
-      <canvas id="c1" height="120"></canvas>
+    <div class="card card-rain">
+      <div class="card-label">Rainfall</div>
+      <div><span class="card-value" id="s1-rain">--</span><span class="card-unit">mm</span></div>
+      <div class="rain-drops">
+        <div class="rain-drop"></div><div class="rain-drop"></div><div class="rain-drop"></div>
+        <div class="rain-drop"></div><div class="rain-drop"></div>
+      </div>
     </div>
-    <div class="chart-card">
-      <div class="chart-title"><span class="dot" style="background:#00c8ff"></span>Wind Speed</div>
-      <canvas id="c2" height="120"></canvas>
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:#ff9a6c"></span>Temperature &amp; Humidity</div>
+        <canvas id="s1-c1" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--s1)"></span>Wind Speed</div>
+        <canvas id="s1-c2" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:#ffd93d"></span>Light Intensity</div>
+        <canvas id="s1-c3" height="120"></canvas>
+      </div>
     </div>
-    <div class="chart-card">
-      <div class="chart-title"><span class="dot" style="background:#ffd93d"></span>Light Intensity</div>
-      <canvas id="c3" height="120"></canvas>
+    <div class="card-signal">
+      <div class="card-label">RF Signal</div>
+      <div class="signal-bars" id="s1-bars"></div>
+      <div class="signal-row"><span class="signal-key">RSSI</span><span class="signal-val" id="s1-rssi">--</span></div>
+      <div class="signal-row"><span class="signal-key">SNR</span><span class="signal-val" id="s1-snr">--</span></div>
+      <div class="signal-row"><span class="signal-key">DR</span><span class="signal-val">DR5 / SF7</span></div>
+      <div class="signal-row"><span class="signal-key">Freq</span><span class="signal-val">865 MHz</span></div>
     </div>
   </div>
-
-  <!-- SIGNAL -->
-  <div class="card-signal">
-    <div class="card-label">RF Signal</div>
-    <div class="signal-bars">
-      <div class="sig-bar active" style="height:20%"></div>
-      <div class="sig-bar active" style="height:40%"></div>
-      <div class="sig-bar active" style="height:60%"></div>
-      <div class="sig-bar active" style="height:80%"></div>
-      <div class="sig-bar active" style="height:100%"></div>
-    </div>
-    <div class="signal-row"><span class="signal-key">RSSI</span><span class="signal-val">-36 dBm</span></div>
-    <div class="signal-row"><span class="signal-key">SNR</span><span class="signal-val">15.0 dB</span></div>
-    <div class="signal-row"><span class="signal-key">DR</span><span class="signal-val">DR5 / SF7</span></div>
-    <div class="signal-row"><span class="signal-key">Freq</span><span class="signal-val">865 MHz</span></div>
-  </div>
-
 </div>
 
-<footer>GASC IoT Agri-Weather Network &nbsp;·&nbsp; ChirpStack v4 &nbsp;·&nbsp; LoRaWAN IN865 &nbsp;·&nbsp; RAK7289C Gateway &nbsp;·&nbsp; SenseCAP S2120</footer>
+<!-- ── STATION 2 ── -->
+<div class="panel" id="panel-s2">
+  <div class="main" style="--accent-cur:var(--s2)">
+    <div class="card card-temp">
+      <div class="card-label">Air Temperature</div>
+      <div><span class="card-value big" id="s2-temp">--</span><span class="card-unit">°C</span></div>
+      <div class="card-sub" id="s2-feels">--</div>
+    </div>
+    <div class="card card-hum">
+      <div class="card-label">Relative Humidity</div>
+      <div><span class="card-value" id="s2-hum">--</span><span class="card-unit">%</span></div>
+      <div class="card-sub" id="s2-dew">Dew point -- °C</div>
+    </div>
+    <div class="card card-pres">
+      <div class="card-label">Barometric Pressure</div>
+      <div><span class="card-value" id="s2-pres">--</span><span class="card-unit">hPa</span></div>
+      <div class="card-sub">Sea level reference</div>
+    </div>
+    <div class="card card-wind">
+      <div class="card-label">Wind</div>
+      <div class="compass-wrap">
+        <div class="compass">
+          <div class="compass-ring">
+            <div class="compass-labels">
+              <span class="N">N</span><span class="S">S</span>
+              <span class="E">E</span><span class="W">W</span>
+            </div>
+            <div class="compass-arrow" id="s2-arrow">
+              <div class="arrow-head"></div><div class="arrow-tail"></div>
+            </div>
+            <div class="compass-center"></div>
+          </div>
+        </div>
+        <div class="wind-stats">
+          <div class="wind-stat"><div class="wind-stat-val" id="s2-wspeed">--</div><div class="wind-stat-lbl">m/s Speed</div></div>
+          <div class="wind-stat"><div class="wind-stat-val" id="s2-wdir">--</div><div class="wind-stat-lbl" id="s2-wdeg">--° Dir</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card card-light">
+      <div class="card-label">Light Intensity</div>
+      <div><span class="card-value" id="s2-lux">--</span><span class="card-unit">lux</span></div>
+      <div class="card-sub">Solar irradiance</div>
+    </div>
+    <div class="card card-uv">
+      <div class="card-label">UV Index</div>
+      <div><span class="card-value" id="s2-uv">--</span><span class="card-unit">UV</span></div>
+      <div class="uv-bar"><div class="uv-cursor" id="s2-uvC"></div></div>
+      <div class="uv-label-text" id="s2-uvL">--</div>
+    </div>
+    <div class="card card-rain">
+      <div class="card-label">Rainfall</div>
+      <div><span class="card-value" id="s2-rain">--</span><span class="card-unit">mm</span></div>
+      <div class="rain-drops">
+        <div class="rain-drop"></div><div class="rain-drop"></div><div class="rain-drop"></div>
+        <div class="rain-drop"></div><div class="rain-drop"></div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:#ff9a6c"></span>Temperature &amp; Humidity</div>
+        <canvas id="s2-c1" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--s2)"></span>Wind Speed</div>
+        <canvas id="s2-c2" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:#ffd93d"></span>Light Intensity</div>
+        <canvas id="s2-c3" height="120"></canvas>
+      </div>
+    </div>
+    <div class="card-signal">
+      <div class="card-label">RF Signal</div>
+      <div class="signal-bars" id="s2-bars"></div>
+      <div class="signal-row"><span class="signal-key">RSSI</span><span class="signal-val" id="s2-rssi">--</span></div>
+      <div class="signal-row"><span class="signal-key">SNR</span><span class="signal-val" id="s2-snr">--</span></div>
+      <div class="signal-row"><span class="signal-key">DR</span><span class="signal-val">DR5 / SF7</span></div>
+      <div class="signal-row"><span class="signal-key">Freq</span><span class="signal-val">865 MHz</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPARE ── -->
+<div class="panel" id="panel-both">
+  <div class="compare-wrap">
+    <div style="display:flex;align-items:center;margin-bottom:16px;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">
+      Station Comparison
+      <div class="legend-bar">
+        <div class="lgd"><div class="lgd-dot" style="background:var(--s1)"></div>Station 1</div>
+        <div class="lgd"><div class="lgd-dot" style="background:var(--s2)"></div>Station 2</div>
+      </div>
+    </div>
+    <div class="cmp-grid">
+      <div class="cmp-card">
+        <div class="cmp-title">🌡 Temperature</div>
+        <div class="cmp-vals">
+          <div class="cval" style="border-color:var(--s1)"><div class="cval-lbl">Station 1</div><div><span class="cval-num" id="cs1-temp">--</span><span class="cval-unit">°C</span></div></div>
+          <div class="cval" style="border-color:var(--s2)"><div class="cval-lbl">Station 2</div><div><span class="cval-num" id="cs2-temp">--</span><span class="cval-unit">°C</span></div></div>
+        </div>
+        <div class="cmp-diff" id="cd-temp">Δ --</div>
+      </div>
+      <div class="cmp-card">
+        <div class="cmp-title">💧 Humidity</div>
+        <div class="cmp-vals">
+          <div class="cval" style="border-color:var(--s1)"><div class="cval-lbl">Station 1</div><div><span class="cval-num" id="cs1-hum">--</span><span class="cval-unit">%</span></div></div>
+          <div class="cval" style="border-color:var(--s2)"><div class="cval-lbl">Station 2</div><div><span class="cval-num" id="cs2-hum">--</span><span class="cval-unit">%</span></div></div>
+        </div>
+        <div class="cmp-diff" id="cd-hum">Δ --</div>
+      </div>
+      <div class="cmp-card">
+        <div class="cmp-title">🌀 Pressure</div>
+        <div class="cmp-vals">
+          <div class="cval" style="border-color:var(--s1)"><div class="cval-lbl">Station 1</div><div><span class="cval-num" id="cs1-pres">--</span><span class="cval-unit">hPa</span></div></div>
+          <div class="cval" style="border-color:var(--s2)"><div class="cval-lbl">Station 2</div><div><span class="cval-num" id="cs2-pres">--</span><span class="cval-unit">hPa</span></div></div>
+        </div>
+        <div class="cmp-diff" id="cd-pres">Δ --</div>
+      </div>
+      <div class="cmp-card">
+        <div class="cmp-title">💨 Wind Speed</div>
+        <div class="cmp-vals">
+          <div class="cval" style="border-color:var(--s1)"><div class="cval-lbl">Station 1</div><div><span class="cval-num" id="cs1-wind">--</span><span class="cval-unit">m/s</span></div></div>
+          <div class="cval" style="border-color:var(--s2)"><div class="cval-lbl">Station 2</div><div><span class="cval-num" id="cs2-wind">--</span><span class="cval-unit">m/s</span></div></div>
+        </div>
+        <div class="cmp-diff" id="cd-wind">Δ --</div>
+      </div>
+      <div class="cmp-card">
+        <div class="cmp-title">☀️ Light</div>
+        <div class="cmp-vals">
+          <div class="cval" style="border-color:var(--s1)"><div class="cval-lbl">Station 1</div><div><span class="cval-num" id="cs1-lux">--</span><span class="cval-unit">lux</span></div></div>
+          <div class="cval" style="border-color:var(--s2)"><div class="cval-lbl">Station 2</div><div><span class="cval-num" id="cs2-lux">--</span><span class="cval-unit">lux</span></div></div>
+        </div>
+        <div class="cmp-diff" id="cd-lux">Δ --</div>
+      </div>
+      <div class="cmp-card">
+        <div class="cmp-title">🌧 Rainfall</div>
+        <div class="cmp-vals">
+          <div class="cval" style="border-color:var(--s1)"><div class="cval-lbl">Station 1</div><div><span class="cval-num" id="cs1-rain">--</span><span class="cval-unit">mm</span></div></div>
+          <div class="cval" style="border-color:var(--s2)"><div class="cval-lbl">Station 2</div><div><span class="cval-num" id="cs2-rain">--</span><span class="cval-unit">mm</span></div></div>
+        </div>
+        <div class="cmp-diff" id="cd-rain">Δ --</div>
+      </div>
+    </div>
+    <div class="cmp-charts">
+      <div class="cmp-chart-card">
+        <div class="chart-title"><span class="dot" style="background:#ff9a6c"></span>Temperature Overlay</div>
+        <canvas id="cc1" height="130"></canvas>
+      </div>
+      <div class="cmp-chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--accent2)"></span>Wind Speed Overlay</div>
+        <canvas id="cc2" height="130"></canvas>
+      </div>
+      <div class="cmp-chart-card">
+        <div class="chart-title"><span class="dot" style="background:#ffd93d"></span>Light Overlay</div>
+        <canvas id="cc3" height="130"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>GASC IoT Agri-Weather Network &nbsp;·&nbsp; ChirpStack v4 &nbsp;·&nbsp; LoRaWAN IN865 &nbsp;·&nbsp; RAK7289C Gateway &nbsp;·&nbsp; SenseCAP S2120 &nbsp;·&nbsp; Dual Station</footer>
 
 <script>
-// UV cursor position
-const uvVal = parseFloat("0.0") || 0;
-const uvPct = Math.min(uvVal / 12 * 100, 100);
-document.getElementById('uvCursor').style.left = uvPct + '%';
+// ── Embedded station data from Python ──
 
-// Chart defaults
+  const s1 = {
+    temp:    "29.3",
+    hum:     "69.0",
+    pres:    "983.0",
+    lux:     "70652.0",
+    uv:      "5.5",
+    uvPct:   45.8,
+    uvLbl:   "Moderate",
+    rain:    "0.0",
+    wspeed:  "0.9",
+    wdeg:    1.8,
+    wdir:    "N",
+    rssi:    "-25 dBm",
+    snr:     "7.0 dB",
+    fcnt:    "1102",
+    battery: "--",
+    eui:     "2cf7f1c073400219",
+    ts:      "2026-03-22 09:25:51",
+    bars:    [1,1,1,1,1],
+    labels:  ["05:24", "05:29", "05:29", "05:29", "05:34", "05:39", "05:40", "05:45", "05:50", "05:50", "05:55", "06:00", "06:05", "06:10", "06:15", "06:20", "06:25", "06:25", "06:30", "06:35", "06:36", "06:41", "06:46", "06:51", "06:51", "06:56", "06:56", "06:56", "07:01", "07:06", "07:11", "07:16", "07:21", "07:26", "07:31", "07:32", "07:37", "07:42", "07:47", "07:47", "07:47", "07:52", "07:57", "08:02", "08:02", "08:03", "08:08", "08:13", "08:13", "08:18", "08:23", "08:23", "08:24", "08:29", "08:34", "08:34", "08:34", "08:39", "08:44", "08:44", "08:45", "08:50", "08:55", "08:55", "09:00", "09:05", "09:05", "09:05", "09:10", "09:15", "09:20", "09:25"],
+    tempH:   [26.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 25.9, 0.0, 0.0, 25.7, 0.0, 25.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 26.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 27.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28.6, 0.0, 0.0, 0.0, 0.0, 29.1, 29.0, 29.3],
+    humH:    [83.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 85.0, 0.0, 0.0, 86.0, 0.0, 86.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 82.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 74.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 71.0, 0.0, 0.0, 0.0, 0.0, 69.0, 69.0, 69.0],
+    windH:   [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8, 0.0, 0.0, 0.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.9],
+    luxH:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 36.0, 0.0, 379.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 16625.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 36619.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 52743.0, 0.0, 0.0, 0.0, 0.0, 51852.0, 66184.0, 70652.0],
+  };
+
+  const s2 = {
+    temp:    "30.7",
+    hum:     "63.0",
+    pres:    "979.1",
+    lux:     "45.0",
+    uv:      "0.0",
+    uvPct:   0.0,
+    uvLbl:   "Low",
+    rain:    "0.0",
+    wspeed:  "0.0",
+    wdeg:    13.2,
+    wdir:    "NNE",
+    rssi:    "-87 dBm",
+    snr:     "2.8 dB",
+    fcnt:    "332",
+    battery: "--",
+    eui:     "2cf7f1c0443002f3",
+    ts:      "2026-03-22 09:26:06",
+    bars:    [1,1,1,0,0],
+    labels:  ["04:21", "04:26", "04:31", "04:36", "04:41", "04:46", "04:51", "04:56", "05:01", "05:06", "05:11", "05:16", "05:21", "05:26", "05:31", "05:36", "05:41", "05:46", "05:51", "05:56", "06:01", "06:06", "06:11", "06:16", "06:21", "06:26", "06:26", "06:31", "06:36", "06:41", "06:46", "06:51", "06:56", "07:01", "07:06", "07:11", "07:16", "07:21", "07:26", "07:31", "07:36", "07:36", "07:41", "07:42", "07:47", "07:47", "07:52", "07:57", "07:57", "08:02", "08:03", "08:03", "08:08", "08:13", "08:13", "08:18", "08:24", "08:24", "08:29", "08:34", "08:34", "08:39", "08:44", "08:45", "08:50", "08:55", "09:00", "09:06", "09:11", "09:16", "09:21", "09:26"],
+    tempH:   [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.4, 0.0, 30.4, 30.4, 30.4, 0.0, 30.4, 0.0, 30.4, 0.0, 30.4, 0.0, 0.0, 0.0, 0.0, 0.0, 30.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.3, 0.0, 30.3, 30.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 30.4, 0.0, 30.4, 0.0, 0.0, 30.6, 30.6, 30.7],
+    humH:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 63.0, 0.0, 63.0, 63.0, 62.0, 0.0, 62.0, 0.0, 63.0, 0.0, 63.0, 0.0, 0.0, 0.0, 0.0, 0.0, 63.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 63.0, 0.0, 63.0, 63.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 63.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 63.0, 0.0, 63.0, 0.0, 0.0, 63.0, 63.0, 63.0],
+    windH:   [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    luxH:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 55.0, 0.0, 57.0, 0.0, 0.0, 38.0, 53.0, 45.0],
+  };
+
+// ── Chart.js defaults ──
 Chart.defaults.color = '#4a6a7a';
 Chart.defaults.borderColor = '#1a2e44';
 Chart.defaults.font.family = 'Rajdhani';
-
-const L = ["23:07", "23:12", "23:17", "23:22", "10:15", "10:20", "10:20", "10:25", "10:30", "10:35", "10:40", "10:45", "10:50", "12:40", "12:45", "12:50", "12:55", "13:06", "13:11", "13:16", "13:21", "13:21", "13:26", "13:31", "13:31", "13:31", "13:36", "13:41", "13:46", "13:51", "13:52", "13:57", "13:57", "14:02", "14:02", "14:07", "17:36", "17:41", "17:51", "17:56", "18:01", "18:06", "18:11", "18:16", "18:21", "18:26", "18:31", "18:36", "18:41", "18:46", "18:51", "18:56", "19:01", "19:06", "19:11", "19:16", "19:21", "19:26", "19:31", "19:36", "19:41", "19:46", "19:51", "19:56", "20:01", "20:06", "20:11", "20:17", "20:59", "20:59", "21:04", "21:04"];
-const mkOpts = (yLabel) => ({
-  responsive: true,
-  animation: { duration: 800, easing: 'easeInOutQuart' },
-  plugins: {
-    legend: { labels: { color: '#4a6a7a', font: { size: 11, family: 'Rajdhani' }, boxWidth: 10 } },
-    tooltip: {
-      backgroundColor: '#0d1821',
-      borderColor: '#1a2e44',
-      borderWidth: 1,
-      titleColor: '#c8dde8',
-      bodyColor: '#7ec8e3',
-      padding: 10,
-      cornerRadius: 8
-    }
+const CHART_OPTS = {
+  responsive:true,
+  animation:{duration:700,easing:'easeInOutQuart'},
+  plugins:{
+    legend:{labels:{color:'#4a6a7a',font:{size:11,family:'Rajdhani'},boxWidth:10}},
+    tooltip:{backgroundColor:'#0d1821',borderColor:'#1a2e44',borderWidth:1,
+              titleColor:'#c8dde8',bodyColor:'#7ec8e3',padding:10,cornerRadius:8}
   },
-  scales: {
-    x: { ticks: { color: '#2a4a5a', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#0f1e2a' } },
-    y: { ticks: { color: '#4a6a7a', font: { size: 10 } }, grid: { color: '#0f1e2a' } }
+  scales:{
+    x:{ticks:{color:'#2a4a5a',maxTicksLimit:8,font:{size:10}},grid:{color:'#0f1e2a'}},
+    y:{ticks:{color:'#4a6a7a',font:{size:10}},grid:{color:'#0f1e2a'}}
   }
-});
+};
 
-new Chart(document.getElementById('c1'), {
-  type: 'line',
-  data: {
-    labels: L,
-    datasets: [
-      { label: 'Temp °C', data: [32.2, 32.2, 32.3, 32.6, 30.2, 30.2, 30.2, 30.2, 30.2, 30.2, 30.1, 29.3, 29.2, 33.4, 32.8, 33.1, 33.0, 34.1, 34.6, 33.9, 34.4, 34.4, 34.9, 34.3, 34.3, 34.3, 34.0, 33.9, 34.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 33.3, 33.3, 33.3, 33.0, 32.5, 32.3, 32.3, 32.3, 32.3, 32.3, 32.1, 31.9, 31.8, 31.8, 31.9, 31.8, 31.4, 30.7, 30.5, 30.6, 30.6, 30.4, 30.2, 29.8, 29.6, 29.6, 29.7, 29.9, 29.7, 29.5, 29.1, 28.6, 28.4, 28.4, 28.3, 28.3], borderColor: '#ff9a6c', backgroundColor: 'rgba(255,154,108,0.08)', tension: 0.4, fill: true, pointRadius: 0, borderWidth: 2 },
-      { label: 'Humidity %', data: [42.0, 41.0, 41.0, 41.0, 58.0, 57.0, 57.0, 57.0, 58.0, 58.0, 58.0, 60.0, 60.0, 43.0, 46.0, 44.0, 46.0, 43.0, 41.0, 44.0, 42.0, 42.0, 42.0, 43.0, 43.0, 43.0, 42.0, 44.0, 42.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 41.0, 41.0, 41.0, 43.0, 44.0, 43.0, 43.0, 43.0, 43.0, 44.0, 45.0, 46.0, 45.0, 45.0, 46.0, 46.0, 46.0, 47.0, 48.0, 45.0, 43.0, 43.0, 43.0, 44.0, 45.0, 44.0, 43.0, 43.0, 44.0, 45.0, 48.0, 51.0, 53.0, 53.0, 54.0, 54.0], borderColor: '#00c8ff', backgroundColor: 'rgba(0,200,255,0.06)', tension: 0.4, fill: true, pointRadius: 0, borderWidth: 2 }
-    ]
-  },
-  options: mkOpts()
-});
+function mkLine(label,data,color,bg){
+  return {label,data,borderColor:color,backgroundColor:bg,tension:0.4,fill:true,pointRadius:0,borderWidth:2};
+}
 
-new Chart(document.getElementById('c2'), {
-  type: 'line',
-  data: {
-    labels: L,
-    datasets: [
-      { label: 'Wind m/s', data: [0.0, 0.0, 2.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 1.2, 0.0, 0.0, 1.2, 0.0, 0.8, 1.6, 0.9, 1.0, 0.9, 0.9, 0.8, 1.0, 1.0, 1.0, 0.9, 1.7, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.8, 0.8, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.0, 0.0, 0.0, 0.0, 0.9, 0.7, 0.7, 1.8, 1.8, 1.8, 2.3, 1.0, 1.1, 0.8, 2.5, 1.0, 2.3, 2.7, 1.0, 1.0, 1.0, 1.0], borderColor: '#00ffa3', backgroundColor: 'rgba(0,255,163,0.06)', tension: 0.4, fill: true, pointRadius: 0, borderWidth: 2 }
-    ]
-  },
-  options: mkOpts()
-});
+// ── Populate station panels ──
+function populateStation(sid,d,color){
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set(sid+'-temp',  d.temp);
+  set(sid+'-hum',   d.hum);
+  set(sid+'-pres',  d.pres);
+  set(sid+'-lux',   d.lux);
+  set(sid+'-uv',    d.uv);
+  set(sid+'-rain',  d.rain);
+  set(sid+'-wspeed',d.wspeed);
+  set(sid+'-wdir',  d.wdir);
+  set(sid+'-wdeg',  d.wdeg+'° Dir');
+  set(sid+'-feels', 'Feels like '+d.temp+' °C');
+  set(sid+'-rssi',  d.rssi);
+  set(sid+'-snr',   d.snr);
+  set(sid+'-uvL',   d.uvLbl);
 
-new Chart(document.getElementById('c3'), {
-  type: 'line',
-  data: {
-    labels: L,
-    datasets: [
-      { label: 'Lux', data: [0.0, 0.0, 0.0, 0.0, 146.0, 144.0, 144.0, 152.0, 136.0, 2478.0, 2415.0, 2465.0, 2469.0, 132693.0, 132186.0, 133163.0, 132484.0, 129501.0, 129705.0, 128166.0, 126682.0, 126682.0, 124872.0, 125778.0, 125778.0, 125778.0, 123231.0, 123136.0, 121631.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8958.0, 5502.0, 3656.0, 3364.0, 4048.0, 4088.0, 3191.0, 2098.0, 1285.0, 692.0, 290.0, 82.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], borderColor: '#ffd93d', backgroundColor: 'rgba(255,217,61,0.06)', tension: 0.4, fill: true, pointRadius: 0, borderWidth: 2 }
-    ]
-  },
-  options: mkOpts()
-});
+  // Dew point
+  const t=parseFloat(d.temp),h=parseFloat(d.hum);
+  if(!isNaN(t)&&!isNaN(h)) set(sid+'-dew','Dew point '+(t-(100-h)/5).toFixed(1)+' °C');
+
+  // Compass arrow
+  const arr=document.getElementById(sid+'-arrow');
+  if(arr) arr.style.transform='rotate('+d.wdeg+'deg)';
+
+  // UV cursor
+  const uc=document.getElementById(sid+'-uvC');
+  if(uc) uc.style.left=d.uvPct+'%';
+
+  // Signal bars
+  const bc=document.getElementById(sid+'-bars');
+  if(bc){
+    bc.innerHTML='';
+    [20,40,60,80,100].forEach((h,i)=>{
+      const b=document.createElement('div');
+      b.className='sig-bar'+(d.bars[i]?' on':'');
+      b.style.height=h+'%';
+      bc.appendChild(b);
+    });
+  }
+
+  // Charts
+  new Chart(document.getElementById(sid+'-c1'),{
+    type:'line',
+    data:{labels:d.labels,datasets:[
+      mkLine('Temp °C',d.tempH,'#ff9a6c','rgba(255,154,108,0.08)'),
+      mkLine('Humidity %',d.humH,color,color+'22'),
+    ]},
+    options:CHART_OPTS
+  });
+  new Chart(document.getElementById(sid+'-c2'),{
+    type:'line',data:{labels:d.labels,datasets:[mkLine('Wind m/s',d.windH,'#00ffa3','rgba(0,255,163,0.06)')]},options:CHART_OPTS
+  });
+  new Chart(document.getElementById(sid+'-c3'),{
+    type:'line',data:{labels:d.labels,datasets:[mkLine('Lux',d.luxH,'#ffd93d','rgba(255,217,61,0.06)')]},options:CHART_OPTS
+  });
+}
+
+populateStation('s1', s1, '#00c8ff');
+populateStation('s2', s2, '#c084fc');
+
+// ── Compare panel ──
+function populateCompare(){
+  const metrics=[
+    ['temp','°C',1],['hum','%',1],['pres','hPa',1],
+    ['wind','m/s',1],['lux','lux',0],['rain','mm',1]
+  ];
+  const src1={temp:s1.temp,hum:s1.hum,pres:s1.pres,wind:s1.wspeed,lux:s1.lux,rain:s1.rain};
+  const src2={temp:s2.temp,hum:s2.hum,pres:s2.pres,wind:s2.wspeed,lux:s2.lux,rain:s2.rain};
+  metrics.forEach(([key,unit,dp])=>{
+    const el1=document.getElementById('cs1-'+key);
+    const el2=document.getElementById('cs2-'+key);
+    const eld=document.getElementById('cd-'+key);
+    const v1=parseFloat(src1[key]),v2=parseFloat(src2[key]);
+    if(el1) el1.textContent=isNaN(v1)?'--':v1.toFixed(dp);
+    if(el2) el2.textContent=isNaN(v2)?'--':v2.toFixed(dp);
+    if(eld&&!isNaN(v1)&&!isNaN(v2)){
+      const d=(v2-v1).toFixed(dp);
+      eld.textContent='Δ '+(d>0?'+':'')+d+' '+unit;
+    }
+  });
+
+  // Overlay charts
+  new Chart(document.getElementById('cc1'),{
+    type:'line',
+    data:{labels:s1.labels,datasets:[
+      mkLine('Temp S1 °C',s1.tempH,'#00c8ff','rgba(0,200,255,0.06)'),
+      mkLine('Temp S2 °C',s2.tempH,'#c084fc','rgba(192,132,252,0.06)'),
+    ]},options:CHART_OPTS
+  });
+  new Chart(document.getElementById('cc2'),{
+    type:'line',
+    data:{labels:s1.labels,datasets:[
+      mkLine('Wind S1 m/s',s1.windH,'#00ffa3','rgba(0,255,163,0.04)'),
+      mkLine('Wind S2 m/s',s2.windH,'#c084fc','rgba(192,132,252,0.06)'),
+    ]},options:CHART_OPTS
+  });
+  new Chart(document.getElementById('cc3'),{
+    type:'line',
+    data:{labels:s1.labels,datasets:[
+      mkLine('Lux S1',s1.luxH,'#ffd93d','rgba(255,217,61,0.04)'),
+      mkLine('Lux S2',s2.luxH,'#c084fc','rgba(192,132,252,0.06)'),
+    ]},options:CHART_OPTS
+  });
+}
+
+// ── Meta bar ──
+function renderMeta(sid,d,cls){
+  return `
+    <div class="meta-item ${cls}">Station <span>${d.eui.slice(-8).toUpperCase()}</span></div>
+    <div class="meta-item ${cls}">Gateway <span>RAK7289C</span></div>
+    <div class="meta-item ${cls}">Network <span>IN865 LoRaWAN</span></div>
+    <div class="meta-item ${cls}">FCnt <span>${d.fcnt}</span></div>
+    <div class="meta-item bat">Battery <span>${d.battery||'--'}%</span></div>
+    <div class="meta-item ${cls}">Refresh <span>5 min</span></div>`;
+}
+
+function updateMeta(tab){
+  const mb=document.getElementById('metabar');
+  if(tab==='both'){
+    mb.innerHTML=renderMeta('s1',s1,'s1')+'<div class="meta-sep">//</div>'+renderMeta('s2',s2,'s2');
+  } else {
+    mb.innerHTML=renderMeta(tab,tab==='s1'?s1:s2,tab);
+  }
+}
+
+// ── Tab switching ──
+let compareReady=false;
+function switchTab(tab){
+  ['s1','s2','both'].forEach(t=>{
+    document.getElementById('panel-'+t).classList.remove('active');
+    document.getElementById('tab-'+t).className='stn-tab';
+  });
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).className='stn-tab act-'+tab;
+  updateMeta(tab);
+  if(tab==='both'&&!compareReady){ populateCompare(); compareReady=true; }
+}
+
+updateMeta('s1');
 </script>
 </body>
 </html>
